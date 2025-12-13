@@ -97,16 +97,18 @@ if in_file is None:
 
 filetype = in_file.type
 page_count = None
+page_index = 0
+page_number = 1
 if "pdf" in filetype:
     page_count = page_counter(in_file)
     page_number = st.sidebar.number_input(
-        f"Page number out of {page_count}:", min_value=0, value=0, max_value=page_count
+        f"Page number (1-{page_count}):", min_value=1, value=1, max_value=page_count
     )
 
-    pil_image = get_page_image(in_file, page_number)
+    page_index = page_number - 1
+    pil_image = get_page_image(in_file, page_index)
 else:
     pil_image = Image.open(in_file).convert("RGB")
-    page_number = None
 
 run_ocr = st.sidebar.button("Run OCR")
 
@@ -134,7 +136,7 @@ if run_ocr:
                 st.download_button(
                     label="Download Markdown",
                     data=result.markdown,
-                    file_name=f"{in_file.name.rsplit('.', 1)[0]}_page{page_number if page_number is not None else 0}.md",
+                    file_name=f"{in_file.name.rsplit('.', 1)[0]}_page{page_number}.md",
                     mime="text/markdown",
                 )
             with text_tab:
@@ -147,7 +149,7 @@ if run_ocr:
                         caption="Detected Layout",
                         use_container_width=True,
                     )
-                    st.text_area(result.raw)
+                    st.text_area("Raw model output", result.raw)
 
 with col2:
     st.image(pil_image, caption="Uploaded Image", use_container_width=True)
