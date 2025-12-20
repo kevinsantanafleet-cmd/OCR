@@ -38,6 +38,12 @@ def pil_image_to_base64(pil_image: Image.Image, format: str = "PNG") -> str:
     return f"data:image/{format.lower()};base64,{img_str}"
 
 
+def build_download_name(uploaded_file_name: str, page_number: int | None) -> str:
+    base_name = uploaded_file_name.rsplit(".", 1)[0]
+    page_suffix = f"_page{page_number}" if page_number is not None else ""
+    return f"{base_name}{page_suffix}.md"
+
+
 def embed_images_in_markdown(markdown: str, images: dict) -> str:
     """Replace image filenames in markdown with base64 data URLs."""
     for img_name, pil_image in images.items():
@@ -97,8 +103,8 @@ if in_file is None:
 
 filetype = in_file.type
 page_count = None
-page_index = 0
-page_number = 1
+page_index = None
+page_number = None
 if "pdf" in filetype:
     page_count = page_counter(in_file)
     page_number = st.sidebar.number_input(
@@ -136,7 +142,7 @@ if run_ocr:
                 st.download_button(
                     label="Download Markdown",
                     data=result.markdown,
-                    file_name=f"{in_file.name.rsplit('.', 1)[0]}_page{page_number}.md",
+                    file_name=build_download_name(in_file.name, page_number),
                     mime="text/markdown",
                 )
             with text_tab:
